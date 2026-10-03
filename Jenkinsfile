@@ -15,7 +15,7 @@ pipeline {
             steps {
                 echo ">>> [1/6] Récupération du code depuis GitHub..."
                 git branch: 'main',
-                    url: 'https://github.com/Alaa-Rami/DevOps-AppGestionDesProjets.git'
+                    url: 'https://github.com/Abassichedly/DevOps-AppGestionDesProjet.git'
             }
         }
         
