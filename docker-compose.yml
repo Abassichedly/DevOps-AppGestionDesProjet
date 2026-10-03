@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+
+  # ---------- BASE DE DONNÉES ----------
+  mysqldb:
+    image: mysql:8
+    container_name: mysqldb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: devops_db
+      MYSQL_USER: devops
+      MYSQL_PASSWORD: devops123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - devops-net
+
+  # ---------- BACKEND SPRING BOOT ----------
+  springapp:
+    build: ./backend
+    container_name: springapp
+    restart: unless-stopped
+    depends_on:
+      - mysqldb
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/devops_db?allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: devops
+      SPRING_DATASOURCE_PASSWORD: devops123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - devops-net
+
+  # ---------- FRONTEND ANGULAR ----------
+  angular:
+    build: ./frontend
+    container_name: angular
+    restart: unless-stopped
+    depends_on:
+      - springapp
+    ports:
+      - "4200:80"
+    networks:
+      - devops-net
+
+  # ---------- ADMINER (UI MySQL) ----------
+  adminer:
+    image: adminer
+    container_name: adminer-ui
+    restart: unless-stopped
+    depends_on:
+      - mysqldb
+    ports:
+      - "8082:8080"
+    networks:
+      - devops-net
+
+networks:
+  devops-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
